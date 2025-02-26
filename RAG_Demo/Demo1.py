@@ -73,78 +73,79 @@
 # #     result = rag_chain.invoke({"input": query})
 # #     st.write(result["answers"])
 
-from langchain_community.document_loaders import UnstructuredURLLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings, OpenAI
-import streamlit as st
-from dotenv import load_dotenv
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
-import os
+# from langchain_community.document_loaders import UnstructuredURLLoader
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain_chroma import Chroma
+# from langchain_openai import OpenAIEmbeddings, OpenAI
+# from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+# import streamlit as st
+# from dotenv import load_dotenv
+# from langchain.chains import create_retrieval_chain
+# from langchain.chains.combine_documents import create_stuff_documents_chain
+# from langchain_core.prompts import ChatPromptTemplate
+# import os
 
-# Load environment variables
-load_dotenv()
+# # Load environment variables
+# load_dotenv()
 
-# Debugging: Check if the API key is loaded
-api_key = os.getenv("OPENAI_API_KEY")
-st.write(f"API Key: {api_key}")  # Debugging line
-if api_key is None:
-    st.error("OPENAI_API_KEY environment variable not set.")
-    st.stop()
-os.environ["OPENAI_API_KEY"] = api_key
+# # Debugging: Check if the API key is loaded
+# api_key = os.getenv("GOOGLE_API_KEY")
+# st.write(f"Google API Key: {api_key}")  # Debugging line
+# if api_key is None:
+#     st.error("GOOGLE_API_KEY environment variable not set.")
+#     st.stop()
+# os.environ["GOOGLE_API_KEY"] = api_key 
 
-# Streamlit app title
-st.title("RAG Application")
+# # Streamlit app title
+# st.title("RAG Application")
 
-# Load data from URLs
-urls = ["https://en.wikipedia.org/wiki/English_Wikipedia"]
-loader = UnstructuredURLLoader(urls)
-data = loader.load()
+# # Load data from URLs
+# urls = ["https://en.wikipedia.org/wiki/English_Wikipedia"]
+# loader = UnstructuredURLLoader(urls)
+# data = loader.load()
 
-# Split data into chunks
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000)
-split_data = text_splitter.split_documents(data)
+# # Split data into chunks
+# text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000)
+# split_data = text_splitter.split_documents(data)
 
-# Embedding and storing in Chroma
-vectorstore = Chroma.from_documents(split_data, OpenAIEmbeddings())
+# # Embedding and storing in Chroma
+# vectorstore = Chroma.from_documents(split_data, GoogleGenerativeAIEmbeddings(),persist_directory="./chroma_db")
 
-# Retriever setup
-retriever = vectorstore.as_retriever(search_type="cosine_similarity", search_kwargs={"n_results": 5})
+# # Retriever setup
+# retriever = vectorstore.as_retriever(search_type="cosine_similarity", search_kwargs={"n_results": 5})
 
-# LLM setup
-llm = OpenAI(temperature=0.5, max_tokens=500)
+# # LLM setup
+# llm = GoogleGenerativeAI(temperature=0.7)
 
-# Chat input
-query = st.chat_input("Ask a question:")
-if query:
-    # System prompt
-    system_prompt = (
-        "You are an assistant for question answering tasks. "
-        "Use the selected contexts of the retrieved context to answer the question. "
-        "If you don't know the answer to the question, you can say 'I don't know'. "
-        "Use 3 sentences maximum to keep the answer concise.\n\n"
-        "{context}"
-    )
+# # Chat input
+# query = st.chat_input("Ask a question:")
+# if query:
+#     # System prompt
+#     system_prompt = (
+#         "You are an assistant for question answering tasks. "
+#         "Use the selected contexts of the retrieved context to answer the question. "
+#         "If you don't know the answer to the question, you can say 'I don't know'. "
+#         "Use 3 sentences maximum to keep the answer concise.\n\n"
+#         "{context}"
+#     )
 
-    # Prompt template
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_prompt),
-            ("human", "{input}")
-        ]
-    )
+#     # Prompt template
+#     prompt = ChatPromptTemplate.from_messages(
+#         [
+#             ("system", system_prompt),
+#             ("human", "{input}")
+#         ]
+#     )
 
-    # Create document chain
-    question_answer_chain = create_stuff_documents_chain(llm, prompt)
+#     # Create document chain
+#     question_answer_chain = create_stuff_documents_chain(llm, prompt)
 
-    # Create retrieval chain
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+#     # Create retrieval chain
+#     rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
-    # Retrieve and generate response
-    result = rag_chain.invoke({"input": query})
-    st.write(result["answer"])
+#     # Retrieve and generate response
+#     result = rag_chain.invoke({"input": query})
+#     st.write(result["answer"])
 
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from langchain_chroma import Chroma
@@ -235,3 +236,87 @@ if query:
 #             st.write(result["answer"])
 #     else:
 #         st.error("No transcript available for this video.")
+
+
+from langchain_community.document_loaders import UnstructuredURLLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain_openai import OpenAI
+from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+import streamlit as st
+from dotenv import load_dotenv
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
+import os
+
+# Load environment variables
+load_dotenv()
+
+# Check Google API Key
+api_key = os.getenv("GOOGLE_API_KEY")
+st.write(f"Google API Key: {api_key}")  # Debugging line
+if api_key is None:
+    st.error("GOOGLE_API_KEY environment variable not set.")
+    st.stop()
+os.environ["GOOGLE_API_KEY"] = api_key  # Ensure it's set
+
+# Streamlit app title
+st.title("RAG Application")
+
+# Load data from URLs
+urls = ["https://en.wikipedia.org/wiki/English_Wikipedia"]
+loader = UnstructuredURLLoader(urls)
+data = loader.load()
+
+# Split data into chunks
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000)
+split_data = text_splitter.split_documents(data)
+
+# Embedding and storing in Chroma
+vectorstore = Chroma.from_documents(
+    split_data, 
+    GoogleGenerativeAIEmbeddings(model="gemini-pro"), 
+    persist_directory="./chroma_db"
+)
+
+# Retriever setup
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})  # Fixed k parameter
+
+# LLM setup
+llm = GoogleGenerativeAI(model="gemini-pro", temperature=0.7)
+
+# Chat input
+query = st.chat_input("Ask a question:")
+if query:
+    # System prompt
+    system_prompt = (
+        "You are an assistant for question answering tasks. "
+        "Use the selected contexts of the retrieved context to answer the question. "
+        "If you don't know the answer, say 'I don't know'. "
+        "Use 3 sentences maximum.\n\n"
+        "{context}"
+    )
+
+    # Prompt template
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            ("human", "{input}")
+        ]
+    )
+
+    # Create document chain (Fix: Correct argument order)
+    question_answer_chain = create_stuff_documents_chain(prompt, llm)
+
+    # Create retrieval chain
+    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+
+    # Retrieve and generate response
+    result = rag_chain.invoke({"input": query})
+    
+    # Debug: Print full response to check keys
+    st.write(result)
+
+    # Output the correct key
+    st.write(result.get("output", "No response generated."))
